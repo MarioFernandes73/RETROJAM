@@ -3,7 +3,7 @@ version 14
 __lua__
 
 function _init()
-
+gameover = false
 boat={
 x = 5,
 y = 5,
@@ -11,11 +11,13 @@ vx = 0,
 vy = 0,
 ax = 0,
 ay = 0,
-width = 16,
-height = 16, 
+width = 8,
+height = 8, 
 collided = false,
 frame = 0,
-invulnerable = false
+invulnerable = false,
+boost = false,
+res = 1
 }
 
 enemy = {
@@ -38,11 +40,36 @@ for i=1, enemynumber do
 	
 end
 
+lastmoved = 0
+
 end
 
 function _draw()
 cls()
-print(stat(1))
+local camerax = 0
+local cameray = 0
+
+if(boat.x >= 64) then
+camerax = boat.x-64
+end
+
+if(boat.y >= 64) then
+cameray = boat.y-64
+end
+
+camera(camerax,cameray)
+map(0,0,0,0,128,32)
+
+if btn(3) then
+	lastmoved = 3
+elseif btn(2) then
+ lastmoved = 2
+elseif btn(1) then
+	lastmoved = 1
+elseif btn(0) then
+	lastmoved = 0 		
+end
+
 for v in all(enemylist) do
 	spr(3,v[1], v[2])
 	print(v[1])
@@ -50,7 +77,15 @@ end
 
 if(boat.invulnerable == false) or
 	(boat.frame%3 != 0) then
-spr(1,boat.x,boat.y,2,2)
+if lastmoved == 3 then
+	spr(11,boat.x, boat.y,1,1,false,true)
+elseif lastmoved == 2 then
+	spr(11, boat.x, boat.y)
+elseif lastmoved == 1 then
+	spr(12, boat.x, boat.y)
+elseif lastmoved == 0 then
+ spr(12, boat.x, boat.y,1,1,true,false)		
+end
 end
 
 end
@@ -79,6 +114,8 @@ boat.frame += 1
 end
 
 enemymovement()
+updateres()
+isgameover()
 
 end
 
@@ -128,6 +165,15 @@ if(direction == true) then
 		e[7] += 1
 	end
 
+if(e[1] < 0) then
+	e[1] = 0
+end
+
+if(e[2] < 0) then
+	e[2] = 0
+end
+
+
 end
 
 end
@@ -146,51 +192,107 @@ return false
 end
 
 function boatmovement()
-
-    -- boat x acceleration
+	if btn(4) then
+		boat.boost = true
+	else
+		boat.boost = false
+	end
+-- boat x acceleration
     boat.ax = 0
-    if (btn(0)) boat.ax=-.25
-    if (btn(1)) boat.ax=.25
-
+    if (btn(0))then
+     boat.ax=-.25
+    end
+    if (btn(1))then
+     boat.ax=.25
+    end
     -- apply x accel
     boat.vx += boat.ax
 
     -- limit x max speed
-    if boat.vx > 3 then
-        boat.vx = 3
-    elseif boat.vx < -3 then
-        boat.vx = -3
-    end
+    if not boat.boost then
+   	 if boat.vx > 1.5 then
+       	 boat.vx = 1.5
+   	 elseif boat.vx < -1.5 then
+       	 boat.vx = -1.5
+   	 end
+   	else
+   		if boat.vx > 3 then
+       	 boat.vx = 3
+   	 elseif boat.vx < -3 then
+       	 boat.vx = -3
+   	 end
+   	end	
 
     -- drag
     if boat.ax == 0 then
-        boat.vx *= 0.8
+        boat.vx *= 0.9
     end
 
     -- boat x acceleration
     boat.ay = 0
-    if (btn(2)) boat.ay=-.25
-    if (btn(3)) boat.ay=.25
-
+    if (btn(2))then
+     boat.ay=-.25
+    end
+    if (btn(3))then
+     boat.ay=.25
+    end
+ 
     -- apply y accel
     boat.vy += boat.ay
 
     -- limit y max speed
-    if boat.vy > 3 then
-        boat.vy = 3
-    elseif boat.vy < -3 then
-        boat.vy = -3
-    end
-
+   	if not boat.boost then
+   	 if boat.vy > 1.5 then
+    	    boat.vy = 1.5
+   	 elseif boat.vy < -1.5 then
+    	    boat.vy = -1.5
+   	 end
+   	elseif boat.boost then
+   		if boat.vy > 3 then
+    	    boat.vy = 3
+   	 elseif boat.vy < -3 then
+    	    boat.vy = -3
+   	 end
+				end
     -- drag
     if boat.ay == 0 then
-        boat.vy *= 0.8
+        boat.vy *= 0.9
     end
-    
+        
 boat.x += boat.vx
 boat.y += boat.vy
 
+if(boat.x < 0) then
+ boat.x = 0
 end
+
+if(boat.y < 0) then
+	boat.y = 0
+end
+
+end
+
+
+function updateres()
+
+	if(boat.ax != 0 or boat.ay != 0) then
+		if(boat.boost) then
+			boat.res -= 1/480
+		else
+			boat.res -= 1/1880
+		end
+	end
+	
+end
+
+function isgameover()
+	
+	if boat.res <= 0 then
+		gameover = true
+	end
+	
+end
+
 __gfx__
 cccccccccccc7cccccc7cccccccccccccccccccc35b35353fffff7ff65606650cccccccc0444444f0000000000020000300070d0000070000000000500000005
 ccc7cccccc7777cccccc7ccccccccccccccc7ccc5355335bffffffff66506650cccccccc004444f600020000030000d000000007000000000000055600050556
@@ -323,6 +425,7 @@ ff5bb3333bb3b5333b3bbb33bbbbbb30007777000077770000000750007777500077775000777050
 
 __gff__
 0000000000000001000000000000000001000000000000010101020202000000000000000000000101010202020000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 55555555040411120404047a4d6d794f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
