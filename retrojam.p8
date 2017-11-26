@@ -117,10 +117,14 @@ end
 
 lastmoved = 0
 
+music(0)
+stage2musicframe = 0
+
 end
 
 function _draw()
 cls()
+	print(stage2musicrame)
 	if(stage1) then
 		drawmainmenu()
 	elseif(stage2) then
@@ -370,6 +374,15 @@ end
 
 
 function _update60()
+
+	stage2musicframe += 1
+	
+	if(stage2musicframe >= 3200) then
+	 stge2musicframe = 0
+	 music(-1)
+	 music(0)
+	end 
+	
 
 	if(stage1) then
 		--updatemainmenu()
@@ -1284,7 +1297,7 @@ __music__
 01 090e1318
 01 0a0f1419
 01 0b10151a
-01 0c11161b
+00 0c11161b
 00 080d1217
 01 1c1d1e44
 02 1c1d1e44
