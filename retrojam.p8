@@ -6,6 +6,7 @@ function _init()
 	refreshenemydist = 100
 	genenemydist = 50
 
+	
 	p = {
 		x = 60,
 		y = 100,
@@ -14,6 +15,8 @@ function _init()
 		vidas = 3,
 		imune = false,
 		
+		imune_frames = 120,
+		
 		spr_it = {26,27,28},
 		spr_it_costas = {42,43,44},
 		spr_it_idle = {48,49, 50},
@@ -21,8 +24,10 @@ function _init()
 		walking = false,
 		right = false,
 		idle = true,
-		decostas = false
+		decostas = false,
+		invis = false
 	}
+	
 	
 	cam = {
 		x = 16,
@@ -119,7 +124,7 @@ cls()
 	elseif(stage2) then
 		drawsea()
 		print(boat.res, boat.x -10, boat.y - 10)
-		rectfill(boat.x - 64,boat.y-54,boat.x-64 - (1-boat.res*100/2),boat.y-44, 8)
+		drawresourcebar()
 		if(trans2_3) then
 			transitionstate2_3()
 		end
@@ -136,7 +141,7 @@ cls()
 		drawisland()
 	elseif(stage4) then
 		camera(0,0)
-		print("OLA")
+		print("ola")
 		if(trans2_4) then
 			transitionstate2_4()
 		end
@@ -149,7 +154,13 @@ cls()
 	end
 end
 
+function drawresourcebar()
+rectfill(boat.x - 64,boat.y-54,boat.x-64 - (1-boat.res*100/2),boat.y-44, 8)
+end
+
 function drawisland()
+
+	
 
  --camera
  cam.x = p.x-4*8
@@ -179,6 +190,8 @@ function drawisland()
 
 	cls()
 	map(0,0,0,0,32,16)
+	
+	rectfill(cam.x+5,cam.y+15,cam.x+30 - (1-boat.res)*25,cam.y+20, 4)
 		
  --animation	
 	if spricor % 15 == 0 then
@@ -192,7 +205,13 @@ function drawisland()
 		end
 	end
 	--draw player
-	spr(current_sprite[spr_current_i],p.x-4,p.y-4,1,1,p.right,false)
+	if p.imune_frames < 120 then
+		if p.imune_frames % 3 == 0 then
+			spr(current_sprite[spr_current_i],p.x-4,p.y-4,1,1,p.right,false)	
+		end
+	else
+		spr(current_sprite[spr_current_i],p.x-4,p.y-4,1,1,p.right,false)
+	end
 
  --shoot enimies
 	if encofra % 60 == 0 then
@@ -228,20 +247,30 @@ function drawisland()
 		--draw seta
 		spr(spr_n,seta.x, seta.y,1,1,flip_h,flip_v)
 	
-	 --player hit
-		if(dist(seta.y,p.y,seta.x,p.x)<1)	then
-			p.vidas -= 1
+		--player hit
+		if(p.imune_frames < 120) then
+			p.imune_frames -= 1
 		end
-		--remove setas
-		if(seta.x > cam.x+128 or seta.x < cam.x)
-		then
-			del(proj, seta)
+		if(p.imune_frames <= 0) then
+					p.imune_frames = 120
+			end
+			if(dist(seta.y,p.y,seta.x,p.x)<2)	then
+				if(p.imune_frames == 120) then
+					p.vidas -=1
+					boat.res -= 0.1
+					p.imune_frames -= 1
+				end	
+			end
+			--remove setas
+			if(seta.x > cam.x+128 or seta.x < cam.x)
+			then
+				del(proj, seta)
+			end
+			if(seta.y > cam.y + 128 or seta.y < cam.y)
+			then
+				del(proj, seta)
+			end
 		end
-		if(seta.y > cam.y + 128 or seta.y < cam.y)
-		then
-			del(proj, seta)
-		end
-	end
 	
 	print(stat(1))
 	
