@@ -98,6 +98,8 @@ for i=1, enemynumber do
 	
 end
 
+lastmoved = 0
+
 end
 
 function _draw()
@@ -291,6 +293,7 @@ elseif lastmoved == 1 then
 elseif lastmoved == 0 then
  spr(162, boat.x, boat.y,2,1,true,false)		
 end
+end
 
 
 end
@@ -450,6 +453,8 @@ boat.frame += 1
 end
 
 enemymovement()
+updateres()
+isgameover()
 
 end
 
@@ -499,8 +504,12 @@ if(direction == true) then
 		e[7] += 1
 	end
 
+if(e[1] < 0) then
+	e[1] = 0
 end
 
+if(e[2] < 0) then
+	e[2] = 0
 end
 
 
@@ -523,8 +532,12 @@ return false
 end
 
 function boatmovement()
-
-    -- boat x acceleration
+	if btn(4) then
+		boat.boost = true
+	else
+		boat.boost = false
+	end
+-- boat x acceleration
     boat.ax = 0
     if (btn(0))then
      lastmoved = 0
@@ -538,15 +551,23 @@ function boatmovement()
     boat.vx += boat.ax
 
     -- limit x max speed
-    if boat.vx > 3 then
-        boat.vx = 3
-    elseif boat.vx < -3 then
-        boat.vx = -3
-    end
+    if not boat.boost then
+   	 if boat.vx > 1.5 then
+       	 boat.vx = 1.5
+   	 elseif boat.vx < -1.5 then
+       	 boat.vx = -1.5
+   	 end
+   	else
+   		if boat.vx > 3 then
+       	 boat.vx = 3
+   	 elseif boat.vx < -3 then
+       	 boat.vx = -3
+   	 end
+   	end	
 
     -- drag
     if boat.ax == 0 then
-        boat.vx *= 0.8
+        boat.vx *= 0.9
     end
 
     -- boat x acceleration
@@ -564,17 +585,24 @@ function boatmovement()
     boat.vy += boat.ay
 
     -- limit y max speed
-    if boat.vy > 3 then
-        boat.vy = 3
-    elseif boat.vy < -3 then
-        boat.vy = -3
-    end
-
+   	if not boat.boost then
+   	 if boat.vy > 1.5 then
+    	    boat.vy = 1.5
+   	 elseif boat.vy < -1.5 then
+    	    boat.vy = -1.5
+   	 end
+   	elseif boat.boost then
+   		if boat.vy > 3 then
+    	    boat.vy = 3
+   	 elseif boat.vy < -3 then
+    	    boat.vy = -3
+   	 end
+				end
     -- drag
     if boat.ay == 0 then
-        boat.vy *= 0.8
+        boat.vy *= 0.9
     end
-    
+        
 boat.x += boat.vx
 boat.y += boat.vy
 
